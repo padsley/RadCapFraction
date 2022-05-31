@@ -1,8 +1,6 @@
 #include "RadCapFunctions.h"
 
-
-
-void DRAGONRadCapGenerator()
+void DRAGONRadCapGenerator(int InitialStateIndex=2)
 {
     
     //Standard function for loading variables and declaring stuff
@@ -44,5 +42,77 @@ void DRAGONRadCapGenerator()
     
     NormaliseDecayInformation(IntensityMatrix);
     
-    PrintLevels();
+//     PrintLevels();
+    
+    int count_steps = 0;
+    
+    vector<double> ExcitationsOfLevelsIncluded;
+    bool *LevelsHit = new bool[nStates];
+    for(int i=0;i<nStates;i++)LevelsHit[i] = false;
+    
+    vector<int> ListOfLevelsHit;
+    
+    while(!CheckFinished(IntensityVector,1) && count_steps<3)
+    {
+//         std::cout << "Step " << count_steps << endl;
+        
+        if(VerboseFlag)
+        {
+            std::cout << "IntensityVector" << std::endl;
+            PrintIntensityVector(IntensityVector);
+        }
+        
+        if(VerboseFlag)
+        {
+            std::cout << "nextIntensityVector" << std::endl;
+            PrintIntensityVector(nextIntensityVector);
+        }
+
+        
+        //Find which levels have been touched by the decay cascade
+        for(int j=0;j<nStates;j++)//loop over the initial states
+        {
+            for(int i=0;i<nStates;i++)//loop over the possible final states
+            {
+                if(IntensityMatrix[j][i]>0 && IntensityVector[j]>0) //check to see that there's something in the initial state and that there's a transition into the final state
+                {
+                    LevelsHit[i] = true;
+                
+                }
+            }
+        }
+        
+        count_steps++;
+    }
+    
+    for(int i=0;i<nStates;i++)
+        if(LevelsHit[i])ListOfLevelsHit.push_back(i);//This makes a vector listing the levels hit in my calculation
+        
+        
+    for(unsigned int i=0;i<ListOfLevelsHit.size();i++)
+    {
+        std::cout << "level(" << i << ") = " << vEx.at(ListOfLevelsHit.at(i)) << std::endl;
+    }
+        
+        /*
+        for(int j=2;j<nStates;j++)//this is the initial state
+        {
+            for(int i=0;i<nStates;i++)//this is the final state
+            {
+                if(IntensityMatrix[j][i]>0 && IntensityVector[j]>0)
+                {                    
+                    nextIntensityVector[i] += IntensityMatrix[j][i] * IntensityVector[j];
+                    nextsigIntensityVector[i] = sqrt(pow(sigIntensityVector[i],2.) + pow(IntensityMatrix[j][i] * IntensityVector[j],2.)*(pow(sigIntensityMatrix[j][i]/IntensityMatrix[j][i],2.) + pow(sigIntensityVector[j]/IntensityVector[j],2.)));
+                }
+                
+                
+            }
+            //             std::cout << std::endl;
+            IntensityVector[j] = 0;
+        }
+        IntensityVector = nextIntensityVector;
+        sigIntensityVector = nextsigIntensityVector;
+        count_steps++;
+        */
+    
 }
