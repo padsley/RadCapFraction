@@ -49,6 +49,7 @@ void DRAGONRadCapGenerator(int InitialStateIndex=2)
     vector<double> ExcitationsOfLevelsIncluded;
     bool *LevelsHit = new bool[nStates];
     for(int i=0;i<nStates;i++)LevelsHit[i] = false;
+    LevelsHit[InitialStateIndex] = true;
     
     vector<int> ListOfLevelsHit;
     
