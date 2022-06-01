@@ -52,20 +52,20 @@ void DRAGONRadCapGenerator(int InitialStateIndex=2)
     
     vector<int> ListOfLevelsHit;
     
-    while(!CheckFinished(IntensityVector,1) && count_steps<3)
+    while(!CheckFinished(IntensityVector,2) && count_steps<3)
     {
 //         std::cout << "Step " << count_steps << endl;
         
         if(VerboseFlag)
         {
             std::cout << "IntensityVector" << std::endl;
-            PrintIntensityVector(IntensityVector);
+            PrintIntensityVector(IntensityVector,InitialStateIndex);
         }
         
         if(VerboseFlag)
         {
             std::cout << "nextIntensityVector" << std::endl;
-            PrintIntensityVector(nextIntensityVector);
+            PrintIntensityVector(nextIntensityVector,InitialStateIndex);
         }
 
         
@@ -77,13 +77,19 @@ void DRAGONRadCapGenerator(int InitialStateIndex=2)
                 if(IntensityMatrix[j][i]>0 && IntensityVector[j]>0) //check to see that there's something in the initial state and that there's a transition into the final state
                 {
                     LevelsHit[i] = true;
-                
+                    
+                    nextIntensityVector[i] += IntensityMatrix[j][i] * IntensityVector[j];
+                    nextsigIntensityVector[i] = sqrt(pow(sigIntensityVector[i],2.) + pow(IntensityMatrix[j][i] * IntensityVector[j],2.)*(pow(sigIntensityMatrix[j][i]/IntensityMatrix[j][i],2.) + pow(sigIntensityVector[j]/IntensityVector[j],2.)));
                 }
             }
+            IntensityVector[j] = 0;
+            
         }
+        IntensityVector = nextIntensityVector;
+        sigIntensityVector = nextsigIntensityVector;
         
-        count_steps++;
-    }
+//         count_steps++;
+    }//end of the while condition
     
     for(int i=0;i<nStates;i++)
         if(LevelsHit[i])ListOfLevelsHit.push_back(i);//This makes a vector listing the levels hit in my calculation
