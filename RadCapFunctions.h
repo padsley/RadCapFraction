@@ -3,15 +3,29 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <functional>
+#include <cassert>
+#include <numeric>
 #include <TString.h>
 
 //**************************** THESE ARE THE THINGS TO CHANGE ***********************************
+bool VerboseFlag = false; //if you want more information as to what is happening
+
+int DecayLimit = 6; //Max number of decays possible from a state
+unsigned int LevelLimit = 15; //Max number of levels it is possible to include
+int FinalLevels = 2; //number of final levels which collect all of the decays at the end
+
+double MinIntensityAllowed = 0.; //this is the minimum intensity allowed for each branch - it should be set automatically in the code!
+
 string ENSDF_input = "Ca40_ensdf.dat"; //change this file to get a different input - for some reason that I don't quite understand you need to have one blank line at the end of this file to get it not to crash horribly
 int MassNumber = 40; //change this for the right mass number for the decay
 string Symbol = "CA"; //change this for the right symbol for the decay NOTE THAT IT'S ALL CAPS!!!!
 
 //40Ca
 double MassRecoil = 37225.217616*1000; //This is the recoil mass in units of keV/c/c
+
+
+double MatchingEnergy = 1.0;//Energy in keV for the matching between the different gammas rays and stuff - if you're getting lots of missing flux then this might need to be bigger
 
 //26Al:
 // string ENSDF_input = "Al26_ensdf.dat";
@@ -21,11 +35,11 @@ double MassRecoil = 37225.217616*1000; //This is the recoil mass in units of keV
 //************************************************************************************************
 
 
-vector<double> vEx;
+std::vector<double> vEx, vTime;
 
 int nStates = 0;
 
-bool VerboseFlag = true;
+
 void PrintIntensityVector(double *IntensityVector, int InitialStateIndex);
 void PrintIntensityMatrix(double **IntensityMatrix);
 
@@ -42,7 +56,7 @@ double *nextIntensityVector;
 double *sigIntensityVector;
 double *nextsigIntensityVector;
 
-
+std::vector<int> ProcessDecay(int InitialStateIndex);
 
 double CorrectForRecoil(double Egamma, double mass_recoil)
 {
@@ -143,6 +157,12 @@ void LoadLevelInformation()
             if(strcmp(line.substr(1,7).c_str(),testStatement.c_str())==0)
             {
                 vEx.push_back(atof(line.substr(9,13).c_str()));
+                
+                double DummyTime = 1.e-9;//seconds
+                
+                
+                
+                vTime.push_back();
             }
         }
     }
@@ -197,7 +217,7 @@ void LoadDecayInformation()
                 }
                 else
                 {
-                    std::cout << "Energy not found in vector" << std::endl;
+                    std::cout << "Energy not found in vector!!" << std::endl;
                 }
             }
             else if(strcmp(line.substr(1,7).c_str(),testStatement2.c_str())==0)
@@ -209,6 +229,8 @@ void LoadDecayInformation()
                 Egamma = CorrectForRecoil(Egamma,MassRecoil);
                 
                 double FinalEnergy = *it - Egamma;
+                
+                if(VerboseFlag && StateIndex==74)std::cout << "Final energy = " << FinalEnergy << std::endl;
                 
                 double Intensity = atof(line.substr(22,7).c_str());
                 
@@ -256,10 +278,10 @@ void LoadDecayInformation()
                 
                 for(unsigned int i=0;i<vEx.size();i++)//looking for the final level so looping over the list here
                 {
-//                     if(VerboseFlag)std::cout << abs(FinalEnergy - vEx.at(i)) << std::endl;
-                    if(abs(FinalEnergy - vEx.at(i))<0.5)//only care about if the gamma energy matches a known level - if this isn't true ever then it's a problem I guess?
+                    if(VerboseFlag && StateIndex==74)std::cout << abs(FinalEnergy - vEx.at(i)) << std::endl;
+                    if(abs(FinalEnergy - vEx.at(i))<MatchingEnergy)//only care about if the gamma energy matches a known level - if this isn't true ever then it's a problem I guess?
                     {
-                        std::cout << "Found matching state with index " << StateIndex << std::endl;
+//                         std::cout << "Found matching state with index " << StateIndex << std::endl;
                         IntensityMatrix[StateIndex][i] = Intensity;
                         sigIntensityMatrix[StateIndex][i] = sigIntensity;
                     }
@@ -272,4 +294,14 @@ void LoadDecayInformation()
             }
         }
     }
+}
+
+
+void printVec(const std::vector<double> &vec)
+{
+    std::cout << "v= {";
+    for (unsigned int i=0;i<vec.size()-1;i++)
+        std::cout << vec.at(i) << ", ";
+    std::cout << vec.at(vec.size()-1);
+    std::cout << "}\n";
 }

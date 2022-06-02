@@ -76,12 +76,13 @@ void Mg25_p_g_branching(int InitialStateIndex = 2)
     {
 //         std::cout << "Step " << count_steps << endl;
         
-                        if(VerboseFlag)
+        if(VerboseFlag)
         {
             std::cout << "IntensityVector" << std::endl;
             PrintIntensityVector(IntensityVector,InitialStateIndex);
         }
-                        if(VerboseFlag)
+        
+        if(VerboseFlag)
         {
             std::cout << "nextIntensityVector" << std::endl;
             PrintIntensityVector(nextIntensityVector,InitialStateIndex);
