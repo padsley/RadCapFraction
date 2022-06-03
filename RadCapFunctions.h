@@ -7,8 +7,10 @@
 #include <cassert>
 #include <numeric>
 #include <TString.h>
+#include <TMath.h>
 
 //**************************** THESE ARE THE THINGS TO CHANGE ***********************************
+////you can actually just add the changed ENSDF_input, MassNumber, MassRecoil and Symbol to the top of the code that you're using if you really want - this sometimes actually works a bit better than changing things here tbqh but it's an option
 bool VerboseFlag = false; //if you want more information as to what is happening
 
 int DecayLimit = 6; //Max number of decays possible from a state
@@ -157,18 +159,59 @@ void LoadLevelInformation()
             if(strcmp(line.substr(1,7).c_str(),testStatement.c_str())==0)
             {
                 vEx.push_back(atof(line.substr(9,13).c_str()));
-                
-                double DummyTime = 1.e-9;//seconds
-                
-                
-                
-                vTime.push_back();
+//                 vTime.push_back();
+//                 std::cout << line.substr(39,10) << std::endl;
+//                 std::size_t ns = line.substr(39,10).find("S");
+//                 std::size_t ns = line.substr(39,10).find("MS");
+//                 std::size_t ns = line.substr(39,10).find("US");
+                std::size_t ns = line.substr(39,10).find("NS");
+                std::size_t ps = line.substr(39,10).find("PS");
+                std::size_t fs = line.substr(39,10).find("FS");
+                std::size_t keV = line.substr(39,10).find("KEV");
+                std::size_t MeV = line.substr(39,10).find("MEV");
+                std::size_t stable = line.substr(39,10).find("STABLE");
+                if(ns!=std::string::npos)
+                {
+                    if(VerboseFlag)std::cout << "Have found a time in ns which is: " << line.substr(39,10).substr(0,ns-1) << std::endl;
+                    vTime.push_back(atof(line.substr(39,10).substr(0,ns-1).c_str())*1.e-9);
+                }
+                else if(ps!=std::string::npos)
+                {
+                    if(VerboseFlag)std::cout << "Have found a time in ps which is: " << line.substr(39,10).substr(0,ps-1) << std::endl;
+                    vTime.push_back(atof(line.substr(39,10).substr(0,ps-1).c_str())*1.e-12);
+                }
+                else if(fs!=std::string::npos)
+                {
+                    if(VerboseFlag)std::cout << "Have found a time in fs which is: " << line.substr(39,10).substr(0,fs-1) << std::endl;
+                    vTime.push_back(atof(line.substr(39,10).substr(0,fs-1).c_str())*1.e-15);
+                }
+                else if(keV!=std::string::npos)
+                {
+                    if(VerboseFlag)std::cout << "Have found a time in keV which is: " << line.substr(39,10).substr(0,keV-1) << std::endl;
+                    vTime.push_back(TMath::Hbar()/TMath::Qe()/atof(line.substr(39,10).substr(0,keV-1).c_str())/1.e3);
+                }
+                else if(MeV!=std::string::npos)
+                {
+                    if(VerboseFlag)std::cout << "Have found a time in keV which is: " << line.substr(39,10).substr(0,MeV-1) << std::endl;
+                    vTime.push_back(TMath::Hbar()/TMath::Qe()/atof(line.substr(39,10).substr(0,MeV-1).c_str())/1.e6);
+                }
+                else if(stable!=std::string::npos)
+                {
+                    vTime.push_back(1000);
+                }
+                else
+                {
+                    if(VerboseFlag)std::cout << "Could not find a time, making it 1 ps" << std::endl;
+                    vTime.push_back(1.e-12);
+                }
             }
         }
     }
     
     nStates = vEx.size();
     std::cout << "nStates = " << nStates << std::endl;
+    
+    if(vEx.size()!=vTime.size())std::cout << "HAVEN'T GOT THE THE SAME NUMBER OF EXCITATION ENERGIES AND TIMES!!!!!!!!!" << std::endl;
         
     input.close();
     

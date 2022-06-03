@@ -31,6 +31,11 @@
 
 void Mg25_p_g_branching(int InitialStateIndex = 2)
 {
+    ENSDF_input = "Al26_ensdf.dat";
+    MassNumber = 26;
+    Symbol = "AL";
+    MassRecoil = 24206.831449*1000;
+    
     if(vEx.size()==0)
     {
         LoadLevelInformation();
